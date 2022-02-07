@@ -1,0 +1,36 @@
+version: "3.3"
+   
+services:
+  db:
+    image: mysql:8.0.22
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE: $DB_NAME
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASS
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/config.d/pw.cnf:/etc/mysql/conf.d/pw.cnf
+  app:
+    # image: __IMAGE_NAME__:__IMAGE_TAG__
+    image: bicon:local
+    build:
+      context: .
+      dockerfile: cicd/Dockerfile
+    volumes:
+      - ./bicon:/bicon
+
+    environment:
+      - DB_ENGINE
+      - DB_PORT
+      - DB_HOST
+      - DB_NAME
+      - DB_USER
+      - DB_PASS
+      - AUTO_MIGRATION
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db

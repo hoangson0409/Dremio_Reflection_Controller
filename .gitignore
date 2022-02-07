@@ -1,0 +1,12 @@
+.env
+__pycache__/
+.idea/
+bicon/credentials.json
+.dockerignore
+mysql/data/
+#bicon/scrapy_app/scrapy_app/twistd.pid
+#bicon/scrapy_app/build/
+#bicon/scrapy_app/scrapy_app/eggs/
+#bicon/scrapy_app/project.egg-info/
+#bicon/scrapy_app/scrapy_app/logs/
+

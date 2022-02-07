@@ -1,0 +1,72 @@
+stages:
+  - build
+  - migration
+  - deploy
+  - restart_worker
+  - rollback
+  - clean
+variables:
+  GCP_PROJECT_NAME: "pw-exodus"
+  ANSIBLE_DEPLOY: "true"
+  BG_DEPLOY: "true"
+  GCP_PROJECT_ZONE: "us-central1-a"
+  REGISTRY_PATH: "gcr.io/pw-exodus/bi"
+  NOTIFICATION: "false"
+  APP_ENV: "bi-stage"
+
+
+build_image:
+  stage: build
+  variables:
+    # GIT_SUBMODULE_STRATEGY: recursive
+    NOTIFICATION: "true"
+    APP_DOMAIN: "bicon.bi-stage.stuffio.com"
+  script:
+    - cp -fv .env.example .env
+    - sed -i "s/\s*=\s*/=/g" .env
+    - pwci build
+  # only: &prod_branches
+  #   - /^master.*/
+  tags:
+    - gke-staging
+
+app_deploy:
+  stage: deploy
+  variables:
+    APP_DOMAIN: "bicon.bi-stage.stuffio.com"
+    WORKLOAD_TYPE: deployment
+    WORKLOAD_NAME: bicon-app
+    CONTAINER_NAME: bicon-app
+  script:
+    - pwci rancher_workload_update_image
+  # only: *prod_branches
+  tags:
+    - stage1t3
+  # when: manual
+  # allow_failure: false
+
+app_worker:
+  stage: restart_worker
+  variables:
+    APP_DOMAIN: "bicon.bi-stage.stuffio.com"
+    WORKLOAD_TYPE: deployment
+    WORKLOAD_NAME: bicon-worker
+    CONTAINER_NAME: bicon-worker
+  script:
+    - pwci rancher_workload_update_image
+  # only: *prod_branches
+  tags:
+    - stage1t3
+
+app_scheduler:
+  stage: restart_worker
+  variables:
+    APP_DOMAIN: "bicon.bi-stage.stuffio.com"
+    WORKLOAD_TYPE: deployment
+    WORKLOAD_NAME: bicon-scheduler
+    CONTAINER_NAME: bicon-scheduler
+  script:
+    - pwci rancher_workload_update_image
+  # only: *prod_branches
+  tags:
+    - stage1t3
